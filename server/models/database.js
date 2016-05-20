@@ -1,15 +1,21 @@
 var pg = require('pg');
-var connectionString = "postgres://*kjakjjfpjggjja*:*3Al9QFqYeuzeSUK1cCWE3osXsi@ec2-54-228-226-93.eu-west-1.compute.amazonaws.com*:*5432*:/*d9ger7jvq3mgd9?ssl=true*"
-
-pg.connect(connectionString, function(err, client, done) {
-   client.query('SELECT * FROM your_table', function(err, result) {
-      done();
-      if(err) return console.error(err);
-      console.log(result.rows);
-   });
-});;
-
-var client = new pg.Client("postgres://*kjakjjfpjggjja*:*3Al9QFqYeuzeSUK1cCWE3osXsi@ec2-54-228-226-93.eu-west-1.compute.amazonaws.com*:*5432*:/*d9ger7jvq3mgd9?ssl=true*");
-client.connect();
-var query = client.query('CREATE TABLE items(id SERIAL PRIMARY KEY, text VARCHAR(40) not null, complete BOOLEAN)');
-query.on('end', function() { client.end(); });
+var conString = "postgres://kjakjjfpjggjja:3Al9QFqYeuzeSUK1cCWE3osXsi@localhost/d9ger7jvq3mgd9";
+ 
+//this initializes a connection pool 
+//it will keep idle connections open for a (configurable) 30 seconds 
+//and set a limit of 10 (also configurable) 
+pg.connect(conString, function(err, client, done) {
+  if(err) {
+    return console.error('error fetching client from pool', err);
+  }
+  client.query('SELECT $1::int AS number', ['1'], function(err, result) {
+    //call `done()` to release the client back to the pool 
+    done();
+ 
+    if(err) {
+      return console.error('error running query', err);
+    }
+    console.log(result.rows[0].number);
+    //output: 1 
+  });
+});
